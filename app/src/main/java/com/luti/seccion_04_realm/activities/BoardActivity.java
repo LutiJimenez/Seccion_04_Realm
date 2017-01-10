@@ -46,6 +46,7 @@ public class BoardActivity extends AppCompatActivity implements RealmChangeListe
         adapter = new BoardAdapter(this, boards, R.layout.list_view_board_item);
         listView = (ListView) findViewById(R.id.listViewBoard);
         listView.setAdapter(adapter);
+        listView.setOnItemClickListener(this);
 
         fab = (FloatingActionButton) findViewById(R.id.fabAddBoard);
        fab.setOnClickListener(new View.OnClickListener() {
@@ -54,6 +55,11 @@ public class BoardActivity extends AppCompatActivity implements RealmChangeListe
                showAlertForCreatingBoard("Add new board", "Type a name for your new board");
            }
        });
+
+        //PARA DEJAR VACIA LA BBDD
+//        realm.beginTransaction();
+//        realm.deleteAll();
+//        realm.commitTransaction();
     }
 
 
