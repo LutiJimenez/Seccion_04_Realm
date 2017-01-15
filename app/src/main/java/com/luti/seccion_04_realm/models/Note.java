@@ -20,13 +20,16 @@ public class Note extends RealmObject {
     @Required
     private Date createdAt;
 
+    private boolean finish;
+
     //COnstructor vacio que necesita REALM
     public Note (){}
 
-    public Note(String description){
+    public Note(String description, boolean finish){
         this.id = MyApplication.NoteID.incrementAndGet();
         this.description = description;
         this.createdAt = new Date();
+        this.finish = finish;
     }
 
     public int getId() {
@@ -39,6 +42,14 @@ public class Note extends RealmObject {
 
     public Date getCreatedAt() {
         return createdAt;
+    }
+
+    public boolean isFinish() {
+        return finish;
+    }
+
+    public void setFinish(boolean finish) {
+        this.finish = finish;
     }
 
 

@@ -1,6 +1,10 @@
 package com.luti.seccion_04_realm.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.DrawableRes;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,12 +70,17 @@ public class NoteAdapter extends BaseAdapter  {
         }
 
         Note note = list.get(position);
+        boolean fin = note.isFinish();
+
         vh.description.setText(note.getDescription());
         DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         String date = df.format(note.getCreatedAt());
         vh.createdAt.setText(date);
 
-
+        if (fin == true)
+            convertView.setBackgroundResource(R.color.colorResult);
+        else
+            convertView.setBackgroundResource(R.color.colorTransparent);
 
         return convertView;
     }

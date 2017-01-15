@@ -2,6 +2,7 @@ package com.luti.seccion_04_realm.activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.annotation.DrawableRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -184,6 +185,7 @@ public class BoardActivity extends AppCompatActivity implements RealmChangeListe
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
         menu.setHeaderTitle(boards.get(info.position).getTitle());
+        //menu.setHeaderIcon(R.drawable.ic_action_name);
         getMenuInflater().inflate(R.menu.context_menu_board_activity,menu);
 
     }

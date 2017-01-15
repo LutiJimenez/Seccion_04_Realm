@@ -10,4 +10,14 @@
         android:id="@+id/editTextNewNote"
         android:layout_margin="15dp"
         android:hint="Type a note..."/>
+
+    <CheckBox
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Done"
+        android:layout_margin="15dp"
+        android:id="@+id/checkBoxFin"
+        android:textStyle="normal"
+        android:layout_gravity="right" />
+
 </LinearLayout>
