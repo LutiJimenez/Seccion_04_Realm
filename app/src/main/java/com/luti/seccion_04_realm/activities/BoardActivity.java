@@ -1,5 +1,6 @@
 package com.luti.seccion_04_realm.activities;
 
+import android.app.ActionBar;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.DrawableRes;
@@ -164,7 +165,6 @@ public class BoardActivity extends AppCompatActivity implements RealmChangeListe
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_board_activity, menu);
-
         return super.onCreateOptionsMenu(menu);
     }
 

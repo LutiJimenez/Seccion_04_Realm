@@ -2,5 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/delete_note_All"
-        android:title="Delete All" />
+        android:title="Delete All"
+        android:icon="@android:drawable/ic_menu_delete"/>
 </menu>
