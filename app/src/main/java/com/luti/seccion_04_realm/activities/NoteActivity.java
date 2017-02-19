@@ -232,7 +232,7 @@ public class NoteActivity extends AppCompatActivity  implements RealmChangeListe
                 showAlertForEditNote("Edit Note", "Change description of the note", notes.get(info.position));
                 return true;
             case R.id.add_calendar:
-                addEventToCalendar(this, notes.get(info.position).getDescription());
+                addEventToCalendar(this, board.getTitle() +"-"+ notes.get(info.position).getDescription());
                 return true;
             default:
                 return super.onContextItemSelected(item);
