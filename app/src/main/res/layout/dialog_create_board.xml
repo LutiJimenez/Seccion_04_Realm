@@ -9,5 +9,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/editTextNewBoard"
         android:layout_margin="15dp"
-        android:hint="Board title"/>
+        android:hint="Board title"
+        android:inputType="textCapWords"/>
 </LinearLayout>

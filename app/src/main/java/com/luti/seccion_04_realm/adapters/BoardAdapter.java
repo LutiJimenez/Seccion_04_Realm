@@ -72,7 +72,7 @@ public class BoardAdapter extends BaseAdapter {
         vh.title.setText(board.getTitle());
 
         int numberOfNotes = board.getNotes().size();
-        String textForNotes = (numberOfNotes == 1)? numberOfNotes + "Note" : numberOfNotes + "Notes";
+        String textForNotes = (numberOfNotes == 1)? numberOfNotes + " Note" : numberOfNotes + " Notes";
         vh.notes.setText(textForNotes);
 
         DateFormat df = new SimpleDateFormat("dd/MM/yyyy");

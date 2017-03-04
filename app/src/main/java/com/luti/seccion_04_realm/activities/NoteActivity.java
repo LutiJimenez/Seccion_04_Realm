@@ -1,46 +1,55 @@
 package com.luti.seccion_04_realm.activities;
 
+
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.provider.CalendarContract;
-import android.support.annotation.DrawableRes;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.format.Time;
+import android.text.InputType;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.luti.seccion_04_realm.R;
 import com.luti.seccion_04_realm.adapters.NoteAdapter;
+import com.luti.seccion_04_realm.app.SwipeDetector;
 import com.luti.seccion_04_realm.models.Board;
 import com.luti.seccion_04_realm.models.Note;
+import com.luti.seccion_04_realm.util.PermissionsUtil;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmList;
-import io.realm.RealmResults;
 
-public class NoteActivity extends AppCompatActivity  implements RealmChangeListener<Board>{
+import static android.R.attr.width;
 
+public class NoteActivity extends AppCompatActivity  implements RealmChangeListener<Board>//, NoteFinal {
+{
     private ListView listView;
     private FloatingActionButton fab;
+    private ImageView img;
 
 
     private NoteAdapter adapter;
@@ -50,6 +59,9 @@ public class NoteActivity extends AppCompatActivity  implements RealmChangeListe
 
     //Recogemos el id del Board para recuperar el objeto completo
     private int boardId;
+
+    //Permisos de Calendario
+    private final int CALENDAR = 100;
 
 
     @Override
@@ -71,6 +83,7 @@ public class NoteActivity extends AppCompatActivity  implements RealmChangeListe
         notes = board.getNotes();
 
 
+
         this.setTitle(board.getTitle());
         fab = (FloatingActionButton) findViewById(R.id.fabAddNote);
         listView = (ListView) findViewById(R.id.listViewNote);
@@ -83,8 +96,78 @@ public class NoteActivity extends AppCompatActivity  implements RealmChangeListe
                 showAlertForCreatingNote("Add New Note","Type a note for " +board.getTitle() + "." );
             }
         });
+
+//create a swipe detector for items in the list
+        final SwipeDetector swipeDetector = new SwipeDetector();
+        //add a touch listener for the list view
+        listView.setOnTouchListener(swipeDetector);
+        //also add a click listener and use it to get position in list
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TranslateAnimation anim_enter_del;
+                final Note[] nota = {new Note()};
+                if (swipeDetector.swipeDetected()){
+                    //get the object's position in the list
+                    SwipeDetector.Action ac = swipeDetector.getAction();
+                    if (ac.equals(SwipeDetector.Action.LR)){
+                        nota[0] = adapter.getItem(position);
+                        //delete the object from DB
+                        editNote2(nota[0], true);
+                    }
+                    else if (ac.equals(SwipeDetector.Action.RL)) {
+                        final int pos = position;
+                        final Note[] not = {nota[0]};
+
+                        Log.d("SWIPE RIGHT", "SWIPE RIGHT");
+                        anim_enter_del = new TranslateAnimation(- 30/100 * width, 0, 0, 0);
+                        anim_enter_del.setDuration(800);
+                        anim_enter_del.setFillAfter(true);
+                        //del.setTag("VISIBLE");
+                        listView.startAnimation(anim_enter_del);
+                        //del.startAnimation(anim_enter_del);
+                        anim_enter_del.setAnimationListener(new Animation.AnimationListener() {
+                            @Override
+                            public void onAnimationStart(Animation animation) {
+                                not[0] = adapter.getItem(pos);
+                                //delete the object from DB
+                                editNote2(not[0], false);
+                            }
+
+                            @Override
+                            public void onAnimationEnd(Animation animation) {
+
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animation animation) {
+
+                            }
+                        });
+                }
+                    //notify user of the removal
+                    //Toast.makeText(getApplicationContext(), "Deleted from " + nota[0].getDescription(), Toast.LENGTH_LONG).show();
+                    //update the view without the removed object
+                    //getCurrentExercisesInWorkout();
+                }
+                else {
+                    if (!view.equals(view.findViewById(R.id.icon)) ) {
+
+                        Note not = adapter.getItem(position);
+                        if (not.isFinish())
+                            editNote2(not, false);
+                        else
+                            editNote2(not, true);
+                    }
+                }
+            }
+        });
+
+
+        //PERMISOS
+        checkPermissions();
         //Muy importante poner esto para que me muestre el context menu al pulsar sobre el item
         registerForContextMenu(listView);
+
 
     }
 
@@ -99,7 +182,9 @@ public class NoteActivity extends AppCompatActivity  implements RealmChangeListe
         builder.setView(viewInflated);
 
         //Ponemos la vista inflada que va a ser la que va a tener el EditText del popup
+
         final EditText input = (EditText) viewInflated.findViewById(R.id.editTextNewNote);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         //final boolean fin = (boolean) viewInflated.findViewById(R.id.checkBoxFin);
 
         builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
@@ -129,9 +214,13 @@ public class NoteActivity extends AppCompatActivity  implements RealmChangeListe
         View viewInflated = LayoutInflater.from(this).inflate(R.layout.dialog_create_note,null);
         builder.setView(viewInflated);
 
+
+
         //Ponemos la vista inflada que va a ser la que va a tener el EditText del popup
         final EditText input = (EditText) viewInflated.findViewById(R.id.editTextNewNote);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         input.setText(notas.getDescription());
+        //final ImageView image = (ImageView) viewInflated.findViewById(R.id.icon);
         final CheckBox fin = (CheckBox) viewInflated.findViewById(R.id.checkBoxFin);
         if (notas.isFinish() == true)
             fin.setChecked(true);
@@ -141,10 +230,14 @@ public class NoteActivity extends AppCompatActivity  implements RealmChangeListe
             public void onClick(DialogInterface dialogInterface, int i) {
                 String note = input.getText().toString().trim();
                 boolean finish = false;
-                if (fin.isChecked())
+                if (fin.isChecked()) {
                     finish = true;
+                    //image.setImageResource(R.mipmap.ic_checkTrue);
+
+                }
                 else
                     finish = false;
+                    //image.setImageResource(R.mipmap.ic_checkTrue);
 
 /*                if(notas.getDescription().equals(note)){
                     Toast.makeText(getApplicationContext(), "The note is equals", Toast.LENGTH_LONG).show();
@@ -174,6 +267,13 @@ public class NoteActivity extends AppCompatActivity  implements RealmChangeListe
     private void editNote(String newNoteDescription, Note note, boolean fin){
         realm.beginTransaction();
         note.setDescription(newNoteDescription);
+        note.setFinish(fin);
+        realm.copyToRealmOrUpdate(note);
+        realm.commitTransaction();
+    }
+
+    private void editNote2( Note note, boolean fin){
+        realm.beginTransaction();
         note.setFinish(fin);
         realm.copyToRealmOrUpdate(note);
         realm.commitTransaction();
@@ -223,7 +323,7 @@ public class NoteActivity extends AppCompatActivity  implements RealmChangeListe
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-
+        String texto = board.getTitle() + "-" + notes.get(info.position).getDescription();
         switch (item.getItemId()){
             case R.id.delete_note:
                 deleteNote(notes.get(info.position));
@@ -232,7 +332,8 @@ public class NoteActivity extends AppCompatActivity  implements RealmChangeListe
                 showAlertForEditNote("Edit Note", "Change description of the note", notes.get(info.position));
                 return true;
             case R.id.add_calendar:
-                addEventToCalendar(this, board.getTitle() +"-"+ notes.get(info.position).getDescription());
+                //if(PermissionsUtil.checkPermissions(this, PermissionsUtil.getPermissions(this)))
+                addEventToCalendar(this, texto);
                 return true;
             default:
                 return super.onContextItemSelected(item);
@@ -271,6 +372,85 @@ public class NoteActivity extends AppCompatActivity  implements RealmChangeListe
 
         activity.startActivity(intent);
     }
+
+
+    //Prueba Calendario
+
+
+
+
+    //Funcionalidad para para el click de la imagen
+/*    @Override
+    public void ValidarNota(int position) {
+        Note nota = adapter.getItem(position);
+        if (nota.isFinish())
+            editNote2(nota, false);
+        else
+            editNote2(nota, true);
+    }*/
+
+//VENTANA DE PERMISOS
+private void checkPermissions(){
+    PermissionsUtil.askPermissions(this);
+}
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case PermissionsUtil.PERMISSION_ALL: {
+
+                if (grantResults.length > 0) {
+
+                    List<Integer> indexesOfPermissionsNeededToShow = new ArrayList<>();
+
+                    for(int i = 0; i < permissions.length; ++i) {
+                        if(ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[i])) {
+                            indexesOfPermissionsNeededToShow.add(i);
+                        }
+                    }
+
+                    int size = indexesOfPermissionsNeededToShow.size();
+                    if(size != 0) {
+                        int i = 0;
+                        boolean isPermissionGranted = true;
+
+                        while(i < size && isPermissionGranted) {
+                            isPermissionGranted = grantResults[indexesOfPermissionsNeededToShow.get(i)]
+                                    == PackageManager.PERMISSION_GRANTED;
+                            i++;
+                        }
+
+                        if(!isPermissionGranted) {
+
+                            showDialogNotCancelable("Permissions mandatory",
+                                    "Calendar permissions is required for this app",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            checkPermissions();
+                                        }
+                                    });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void showDialogNotCancelable(String title, String message,
+                                         DialogInterface.OnClickListener okListener) {
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", okListener)
+                .setCancelable(false)
+                .create()
+                .show();
+    }
+
 
     @Override
     public void onChange(Board element) {

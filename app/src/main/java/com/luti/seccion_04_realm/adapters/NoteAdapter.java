@@ -4,14 +4,21 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.luti.seccion_04_realm.R;
+import com.luti.seccion_04_realm.activities.NoteActivity;
+import com.luti.seccion_04_realm.app.OnSwipeTouchListener;
+import com.luti.seccion_04_realm.interfaces.NoteFinal;
 import com.luti.seccion_04_realm.models.Note;
 
 import org.w3c.dom.Text;
@@ -30,6 +37,7 @@ public class NoteAdapter extends BaseAdapter  {
     private Context context;
     private List<Note> list;
     private int layout;
+    NoteFinal notaFinal;
 
     public NoteAdapter(Context context, List<Note> notes, int layout){
         this.context = context;
@@ -54,7 +62,7 @@ public class NoteAdapter extends BaseAdapter  {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup viewGroup) {
+    public View getView(final int position, View convertView, ViewGroup viewGroup) {
         ViewHolder vh;
 
         //Esto es si esta vacia, si no llama a la base de datos
@@ -63,6 +71,7 @@ public class NoteAdapter extends BaseAdapter  {
             vh = new ViewHolder();
             vh.description = (TextView) convertView.findViewById(R.id.textViewNoteDescription);
             vh.createdAt = (TextView) convertView.findViewById(R.id.textViewNoteCreatedAt);
+            vh.icon = (ImageView) convertView.findViewById(R.id.icon);
             convertView.setTag(vh);
         }else {
             vh = (ViewHolder) convertView.getTag();
@@ -76,17 +85,32 @@ public class NoteAdapter extends BaseAdapter  {
         DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         String date = df.format(note.getCreatedAt());
         vh.createdAt.setText(date);
+ /*       vh.icon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                notaFinal.ValidarNota(position);
+            }
+        });*/
 
-        if (fin == true)
-            convertView.setBackgroundResource(R.color.colorResult);
-        else
-            convertView.setBackgroundResource(R.color.colorTransparent);
+        if (fin == true) {
+            //convertView.setBackgroundResource(R.color.colorResult);
+            vh.icon.setImageResource(R.mipmap.ic_checktrue);
+            int color1 = ContextCompat.getColor(context, R.color.colorCheckTrue);
+            vh.description.setTextColor(color1);
+        }
+        else {
+            //convertView.setBackgroundResource(R.color.colorTransparent);
+            vh.icon.setImageResource(R.mipmap.ic_check);
+            int color = ContextCompat.getColor(context, R.color.colorAccent);
+            vh.description.setTextColor(color);
 
+        }
         return convertView;
     }
 
     public class ViewHolder{
         TextView description;
         TextView createdAt;
+        ImageView icon;
     }
 }

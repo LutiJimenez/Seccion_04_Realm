@@ -8,6 +8,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -111,6 +112,7 @@ public class BoardActivity extends AppCompatActivity implements RealmChangeListe
 
         //Ponemos la vista inflada que va a ser la que va a tener el EditText del popup
         final EditText input = (EditText) viewInflated.findViewById(R.id.editTextNewBoard);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
 
         builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
             @Override
@@ -139,6 +141,7 @@ public class BoardActivity extends AppCompatActivity implements RealmChangeListe
 
         //Ponemos la vista inflada que va a ser la que va a tener el EditText del popup
         final EditText input = (EditText) viewInflated.findViewById(R.id.editTextNewBoard);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         input.setText(board.getTitle());
         builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             @Override

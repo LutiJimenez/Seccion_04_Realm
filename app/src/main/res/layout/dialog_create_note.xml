@@ -9,7 +9,8 @@
         android:layout_height="wrap_content"
         android:id="@+id/editTextNewNote"
         android:layout_margin="15dp"
-        android:hint="Type a note..."/>
+        android:hint="Type a note..."
+        android:inputType="textCapSentences"/>
 
     <CheckBox
         android:layout_width="match_parent"
